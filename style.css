@@ -197,6 +197,23 @@ html, body {
   background: var(--bg-card2);
 }
 
+.btn-confirm-order {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  letter-spacing: 0.03em;
+}
+
+.btn-confirm-order:hover {
+  background: #5dc48d;
+}
+
 /* ===== カード ===== */
 .card {
   background: var(--bg-card);

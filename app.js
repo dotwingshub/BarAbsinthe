@@ -34,11 +34,14 @@ function thisMonthStr() {
 }
 
 function isoToDateStr(iso) {
-  return iso.slice(0, 10);
+  // ローカル時刻で日付を取得（UTC変換による日付ズレを防ぐ）
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
 }
 
 function isoToMonthStr(iso) {
-  return iso.slice(0, 7);
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
 }
 
 // ===== LocalStorage =====
@@ -287,10 +290,12 @@ function openOrderDetail(orderId) {
 }
 
 function closeOrderDetail() {
-  expandedOrderId = activeOrderId; // パネルを閉じた後もカードを展開状態に保つ
+  // 「注文確定」→ サムネイルに直接折りたたむ
+  expandedOrderId = null;
   activeOrderId = null;
   document.getElementById('order-detail-panel').classList.add('hidden');
   renderOrdersList();
+  showToast('注文を受け付けました');
 }
 
 // --- メニューセレクター ---
