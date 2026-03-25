@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarAbsinthe - バー管理システム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header class="header">
+    <h1 class="header-title">🍸 Bar Absinthe</h1>
+    <nav class="nav">
+      <button class="nav-btn active" data-tab="orders">伝票管理</button>
+      <button class="nav-btn" data-tab="menu">メニュー</button>
+      <button class="nav-btn" data-tab="checkout">お会計</button>
+      <button class="nav-btn" data-tab="reports">集計</button>
+    </nav>
+  </header>
+
+  <main class="main">
+
+    <!-- ========== 伝票管理タブ ========== -->
+    <section id="tab-orders" class="tab-content active">
+      <div class="section-header">
+        <h2>伝票管理</h2>
+        <button class="btn btn-primary" id="btn-new-order">＋ 新規伝票</button>
+      </div>
+
+      <!-- 新規伝票作成フォーム -->
+      <div id="new-order-form" class="card hidden">
+        <h3>新規伝票作成</h3>
+        <div class="form-row">
+          <label>テーブル番号</label>
+          <input type="text" id="new-table-number" placeholder="例: 1, A, カウンター" maxlength="10">
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="btn-create-order">作成</button>
+          <button class="btn btn-secondary" id="btn-cancel-new-order">キャンセル</button>
+        </div>
+      </div>
+
+      <!-- 注文追加パネル -->
+      <div id="order-detail-panel" class="card hidden">
+        <div class="order-detail-header">
+          <h3 id="order-detail-title">テーブル -</h3>
+          <button class="btn btn-close" id="btn-close-order-detail">✕</button>
+        </div>
+
+        <div class="order-detail-body">
+          <!-- メニュー選択 -->
+          <div class="menu-selector">
+            <h4>メニューから追加</h4>
+            <div class="category-tabs">
+              <button class="cat-btn active" data-cat="all">すべて</button>
+              <button class="cat-btn" data-cat="ドリンク">ドリンク</button>
+              <button class="cat-btn" data-cat="フード">フード</button>
+            </div>
+            <div id="menu-selector-list" class="menu-selector-list"></div>
+          </div>
+
+          <!-- 伝票内容 -->
+          <div class="order-items-panel">
+            <h4>注文内容</h4>
+            <div id="order-items-list" class="order-items-list"></div>
+            <div class="order-total-row">
+              <span>合計</span>
+              <span id="order-detail-total" class="total-amount">¥0</span>
+            </div>
+            <div class="order-actions">
+              <button class="btn btn-checkout" id="btn-checkout-order">お会計へ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 伝票一覧 -->
+      <div id="orders-list" class="orders-grid"></div>
+    </section>
+
+    <!-- ========== メニュータブ ========== -->
+    <section id="tab-menu" class="tab-content hidden">
+      <div class="section-header">
+        <h2>メニュー管理</h2>
+        <button class="btn btn-primary" id="btn-add-menu">＋ 商品追加</button>
+      </div>
+
+      <!-- 商品追加フォーム -->
+      <div id="menu-form" class="card hidden">
+        <h3 id="menu-form-title">商品追加</h3>
+        <div class="form-row">
+          <label>カテゴリ</label>
+          <select id="menu-category">
+            <option value="ドリンク">ドリンク</option>
+            <option value="フード">フード</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>商品名</label>
+          <input type="text" id="menu-name" placeholder="例: ウイスキーソーダ" maxlength="30">
+        </div>
+        <div class="form-row">
+          <label>価格（円）</label>
+          <input type="number" id="menu-price" placeholder="例: 800" min="0" max="99999">
+        </div>
+        <input type="hidden" id="menu-edit-id">
+        <div class="form-actions">
+          <button class="btn btn-primary" id="btn-save-menu">保存</button>
+          <button class="btn btn-secondary" id="btn-cancel-menu">キャンセル</button>
+        </div>
+      </div>
+
+      <!-- メニュー一覧 -->
+      <div class="menu-category-section">
+        <h3 class="category-label drink-label">🍹 ドリンク</h3>
+        <div id="menu-list-drink" class="menu-list"></div>
+      </div>
+      <div class="menu-category-section">
+        <h3 class="category-label food-label">🍽️ フード</h3>
+        <div id="menu-list-food" class="menu-list"></div>
+      </div>
+    </section>
+
+    <!-- ========== お会計タブ ========== -->
+    <section id="tab-checkout" class="tab-content hidden">
+      <div class="section-header">
+        <h2>お会計</h2>
+      </div>
+      <p class="tab-description">会計待ちの伝票</p>
+      <div id="checkout-list" class="orders-grid"></div>
+
+      <!-- 会計確認モーダル -->
+      <div id="checkout-modal" class="modal-overlay hidden">
+        <div class="modal">
+          <h3>会計確認</h3>
+          <p id="checkout-modal-table" class="modal-table-name"></p>
+          <div id="checkout-modal-items" class="checkout-items-list"></div>
+          <div class="checkout-total-row">
+            <span>合計金額</span>
+            <span id="checkout-modal-total" class="total-amount"></span>
+          </div>
+          <div class="form-row">
+            <label>お預かり金額（円）</label>
+            <input type="number" id="checkout-received" placeholder="0" min="0">
+          </div>
+          <div class="checkout-change-row hidden" id="checkout-change-row">
+            <span>お釣り</span>
+            <span id="checkout-change" class="change-amount"></span>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-primary" id="btn-confirm-checkout">会計完了</button>
+            <button class="btn btn-secondary" id="btn-cancel-checkout">キャンセル</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 集計タブ ========== -->
+    <section id="tab-reports" class="tab-content hidden">
+      <div class="section-header">
+        <h2>売上集計</h2>
+      </div>
+
+      <div class="report-tabs">
+        <button class="report-tab-btn active" data-report="daily">日次</button>
+        <button class="report-tab-btn" data-report="monthly">月次</button>
+      </div>
+
+      <!-- 日次レポート -->
+      <div id="report-daily" class="report-content">
+        <div class="report-filter">
+          <label>日付</label>
+          <input type="date" id="report-date">
+        </div>
+        <div id="daily-summary" class="summary-cards"></div>
+        <div id="daily-orders-list" class="report-orders-list"></div>
+      </div>
+
+      <!-- 月次レポート -->
+      <div id="report-monthly" class="report-content hidden">
+        <div class="report-filter">
+          <label>年月</label>
+          <input type="month" id="report-month">
+        </div>
+        <div id="monthly-summary" class="summary-cards"></div>
+        <div id="monthly-daily-breakdown" class="report-orders-list"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- トースト通知 -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
