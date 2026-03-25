@@ -186,7 +186,8 @@ function initTabs() {
 //   伝票管理タブ
 // ===================================================
 
-let activeOrderId = null; // 現在開いている伝票
+let activeOrderId = null; // 現在編集中の伝票
+let expandedOrderId = null; // 展開中のカード
 let menuSelectorCategory = 'all';
 
 function renderOrdersList() {
@@ -200,19 +201,74 @@ function renderOrdersList() {
   }
 
   orders.forEach(order => {
+    const isExpanded = expandedOrderId === order.id;
     const card = document.createElement('div');
-    card.className = 'order-card';
+    card.className = 'order-card' + (isExpanded ? ' expanded' : '');
     card.dataset.id = order.id;
 
     const count = order.items.reduce((s, i) => s + i.quantity, 0);
-    card.innerHTML = `
-      <div class="table-label">テーブル</div>
-      <div class="table-number">${escHtml(order.tableNumber)}</div>
-      <div class="order-count">${count} 品</div>
-      <div class="order-total">${formatPrice(order.total)}</div>
-      <div class="order-time">${formatTime(order.createdAt)} 〜</div>
-    `;
-    card.addEventListener('click', () => openOrderDetail(order.id));
+
+    if (isExpanded) {
+      const itemsHtml = order.items.length === 0
+        ? `<div class="card-no-items">注文なし</div>`
+        : order.items.map(item => `
+          <div class="card-item-row">
+            <span class="card-item-time">${item.addedAt ? formatTime(item.addedAt) : '--:--'}</span>
+            <span class="card-item-name">${escHtml(item.name)} × ${item.quantity}</span>
+            <span class="card-item-price">${formatPrice(item.price * item.quantity)}</span>
+          </div>`).join('');
+
+      card.innerHTML = `
+        <div class="card-expand-header">
+          <div class="card-expand-info">
+            <span class="card-table-badge">テーブル ${escHtml(order.tableNumber)}</span>
+            <span class="card-time-badge">${formatTime(order.createdAt)} 〜</span>
+          </div>
+          <span class="card-expand-total">${formatPrice(order.total)}</span>
+          <button class="card-collapse-btn" title="閉じる">∧</button>
+        </div>
+        <div class="card-items-list">${itemsHtml}</div>
+        <div class="card-footer-actions">
+          <button class="btn btn-primary btn-sm" data-action="edit">＋ 追加注文</button>
+          <button class="btn btn-checkout btn-sm" data-action="checkout">お会計へ</button>
+        </div>
+      `;
+
+      card.querySelector('.card-expand-header').addEventListener('click', () => {
+        expandedOrderId = null;
+        renderOrdersList();
+      });
+      card.querySelector('.card-collapse-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        expandedOrderId = null;
+        renderOrdersList();
+      });
+      card.querySelector('[data-action="edit"]').addEventListener('click', e => {
+        e.stopPropagation();
+        openOrderDetail(order.id);
+      });
+      card.querySelector('[data-action="checkout"]').addEventListener('click', e => {
+        e.stopPropagation();
+        const oid = order.id;
+        expandedOrderId = null;
+        closeOrderDetail();
+        document.querySelector('[data-tab="checkout"]').click();
+        setTimeout(() => openCheckoutModal(oid), 100);
+      });
+    } else {
+      card.innerHTML = `
+        <div class="table-label">テーブル</div>
+        <div class="table-number">${escHtml(order.tableNumber)}</div>
+        <div class="order-count">${count} 品</div>
+        <div class="order-total">${formatPrice(order.total)}</div>
+        <div class="order-time">${formatTime(order.createdAt)} 〜</div>
+      `;
+      card.addEventListener('click', () => {
+        expandedOrderId = order.id;
+        renderOrdersList();
+      });
+    }
+
     container.appendChild(card);
   });
 }
@@ -231,8 +287,10 @@ function openOrderDetail(orderId) {
 }
 
 function closeOrderDetail() {
+  expandedOrderId = activeOrderId; // パネルを閉じた後もカードを展開状態に保つ
   activeOrderId = null;
   document.getElementById('order-detail-panel').classList.add('hidden');
+  renderOrdersList();
 }
 
 // --- メニューセレクター ---
@@ -275,6 +333,7 @@ function addItemToOrder(menuItem) {
       name: menuItem.name,
       price: menuItem.price,
       quantity: 1,
+      addedAt: new Date().toISOString(),
     });
   }
   order.total = calcOrderTotal(order.items);
@@ -306,6 +365,7 @@ function renderOrderItemsList() {
     const row = document.createElement('div');
     row.className = 'order-item-row';
     row.innerHTML = `
+      <span class="order-item-time">${item.addedAt ? formatTime(item.addedAt) : ''}</span>
       <span class="order-item-name">${escHtml(item.name)}</span>
       <div class="qty-controls">
         <button class="qty-btn" data-action="minus" data-idx="${idx}">－</button>
@@ -379,11 +439,11 @@ function initOrdersTab() {
   // お会計ボタン（詳細パネル内）
   document.getElementById('btn-checkout-order').addEventListener('click', () => {
     if (!activeOrderId) return;
+    const oid = activeOrderId;
+    expandedOrderId = null;
     closeOrderDetail();
-    // お会計タブへ
     document.querySelector('[data-tab="checkout"]').click();
-    // 少し待ってからモーダルを開く
-    setTimeout(() => openCheckoutModal(activeOrderId || findLastOpenOrder()), 100);
+    setTimeout(() => openCheckoutModal(oid), 100);
   });
 }
 
