@@ -863,6 +863,231 @@ html, body {
   color: var(--accent);
 }
 
+/* ===== ラジオグループ（客種別） ===== */
+.radio-group {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.radio-label input[type="radio"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== 客種別バッジ ===== */
+.type-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 20px;
+  vertical-align: middle;
+}
+
+.new-badge {
+  background: rgba(76, 175, 125, 0.2);
+  color: var(--success);
+  border: 1px solid rgba(76, 175, 125, 0.4);
+}
+
+.return-badge {
+  background: rgba(200, 169, 110, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(200, 169, 110, 0.3);
+}
+
+/* ===== 支払方法トグル ===== */
+.payment-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.payment-btn {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 20px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.payment-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.payment-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* ===== 支払方法バッジ ===== */
+.pm-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.cash-badge {
+  background: rgba(110, 168, 200, 0.15);
+  color: var(--drink);
+  border: 1px solid rgba(110, 168, 200, 0.3);
+}
+
+.cl-badge {
+  background: rgba(200, 125, 110, 0.15);
+  color: var(--food);
+  border: 1px solid rgba(200, 125, 110, 0.3);
+}
+
+/* ===== 伝票詳細メタ ===== */
+.order-detail-meta {
+  margin-bottom: 10px;
+}
+
+.meta-info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ===== 日報レポートブロック ===== */
+.daily-report-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.report-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.report-block-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* 集計グリッド */
+.report-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.rstat-block {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.rstat-section-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  letter-spacing: 0.05em;
+}
+
+.rstat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(46,46,64,0.6);
+}
+
+.rstat-row:last-child {
+  border-bottom: none;
+}
+
+.rstat-row.main {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rstat-val {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rstat-val.accent  { color: var(--accent); font-size: 1.05rem; }
+.rstat-val.cash-val { color: var(--drink); }
+.rstat-val.cl-val   { color: var(--food); }
+.rstat-val.new-val  { color: var(--success); }
+.rstat-val.ret-val  { color: var(--accent); }
+
+/* 伝票一覧（日報） */
+.report-order-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-order-row {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.report-order-row .time   { font-size: 0.8rem; color: var(--text-muted); min-width: 42px; }
+.report-order-row .table  { font-weight: 600; color: var(--text); min-width: 70px; }
+.report-order-row .ppl    { font-size: 0.82rem; color: var(--text-muted); }
+.report-order-row .cnt    { font-size: 0.82rem; color: var(--text-muted); flex: 1; }
+.report-order-row .amount { font-weight: 700; color: var(--accent); margin-left: auto; }
+
+/* 日別内訳（月次） */
+.report-day-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-day-row {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.report-day-row .day       { font-weight: 600; min-width: 55px; color: var(--text); }
+.report-day-row .day-count { flex: 1; font-size: 0.85rem; color: var(--text-muted); }
+.report-day-row .day-cash  { font-size: 0.85rem; color: var(--drink); }
+.report-day-row .day-cl    { font-size: 0.85rem; color: var(--food); }
+.report-day-row .day-total { font-weight: 700; color: var(--accent); }
+
 /* ===== トースト通知 ===== */
 .toast {
   position: fixed;

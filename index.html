@@ -35,6 +35,17 @@
           <label>テーブル番号</label>
           <input type="text" id="new-table-number" placeholder="例: 1, A, カウンター" maxlength="10">
         </div>
+        <div class="form-row">
+          <label>人数</label>
+          <input type="number" id="new-people-count" placeholder="人数" min="1" max="99" value="1">
+        </div>
+        <div class="form-row">
+          <label>客種別</label>
+          <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="customer-type" value="再来" checked> 再来</label>
+            <label class="radio-label"><input type="radio" name="customer-type" value="新規"> 新規</label>
+          </div>
+        </div>
         <div class="form-actions">
           <button class="btn btn-primary" id="btn-create-order">作成</button>
           <button class="btn btn-secondary" id="btn-cancel-new-order">キャンセル</button>
@@ -63,6 +74,7 @@
           <!-- 伝票内容 -->
           <div class="order-items-panel">
             <h4>注文内容</h4>
+            <div id="order-detail-meta" class="order-detail-meta"></div>
             <div id="order-items-list" class="order-items-list"></div>
             <div class="order-total-row">
               <span>合計</span>
@@ -141,7 +153,14 @@
             <span id="checkout-modal-total" class="total-amount"></span>
           </div>
           <div class="form-row">
-            <label>お預かり金額（円）</label>
+            <label>支払方法</label>
+            <div class="payment-toggle">
+              <button class="payment-btn active" data-payment="現金">現金</button>
+              <button class="payment-btn" data-payment="CL">CL（カード）</button>
+            </div>
+          </div>
+          <div class="form-row" id="checkout-received-row">
+            <label>お預かり（円）</label>
             <input type="number" id="checkout-received" placeholder="0" min="0">
           </div>
           <div class="checkout-change-row hidden" id="checkout-change-row">
@@ -173,8 +192,7 @@
           <label>日付</label>
           <input type="date" id="report-date">
         </div>
-        <div id="daily-summary" class="summary-cards"></div>
-        <div id="daily-orders-list" class="report-orders-list"></div>
+        <div id="daily-report-body" class="daily-report-body"></div>
       </div>
 
       <!-- 月次レポート -->
@@ -183,8 +201,7 @@
           <label>年月</label>
           <input type="month" id="report-month">
         </div>
-        <div id="monthly-summary" class="summary-cards"></div>
-        <div id="monthly-daily-breakdown" class="report-orders-list"></div>
+        <div id="monthly-report-body" class="daily-report-body"></div>
       </div>
     </section>
 
