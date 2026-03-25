@@ -370,6 +370,9 @@ html, body {
   display: flex;
   gap: 6px;
   margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  flex-wrap: nowrap;
 }
 
 .cat-btn {
@@ -546,6 +549,21 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 
+.champagne-label {
+  color: #d4af37;
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.bottle-label {
+  color: #9b7fd4;
+  border-color: rgba(155, 127, 212, 0.3);
+}
+
+.shot-label {
+  color: #4db8c8;
+  border-color: rgba(77, 184, 200, 0.3);
+}
+
 .drink-label {
   color: var(--drink);
   border-color: rgba(110, 168, 200, 0.3);
@@ -554,6 +572,11 @@ html, body {
 .food-label {
   color: var(--food);
   border-color: rgba(200, 125, 110, 0.3);
+}
+
+.system-label {
+  color: var(--text-muted);
+  border-color: var(--border);
 }
 
 .menu-list {

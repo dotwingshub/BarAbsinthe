@@ -64,24 +64,82 @@ function saveOrders(orders) {
   localStorage.setItem(KEYS.ORDERS, JSON.stringify(orders));
 }
 
+// ===== カテゴリ定義 =====
+
+const MENU_CATEGORIES = [
+  { key: 'シャンパン', label: '🥂 シャンパン', cssClass: 'champagne-label' },
+  { key: 'ボトル',    label: '🍾 ボトル',    cssClass: 'bottle-label' },
+  { key: 'ショット',  label: '🥃 ショット',  cssClass: 'shot-label' },
+  { key: 'ドリンク',  label: '🍹 ドリンク',  cssClass: 'drink-label' },
+  { key: 'フード',    label: '🍽️ フード',    cssClass: 'food-label' },
+  { key: 'システム',  label: '⚙️ システム',  cssClass: 'system-label' },
+];
+
 // ===== デフォルトメニュー（初回起動時） =====
+
+function getDefaultMenuItems() {
+  return [
+    // シャンパン
+    { id: genId(), name: 'MAVAM',                  price: 10000,  category: 'シャンパン' },
+    { id: genId(), name: 'プーブグリコ イエロー',  price: 18000,  category: 'シャンパン' },
+    { id: genId(), name: 'プーブグリコ 白',        price: 20000,  category: 'シャンパン' },
+    { id: genId(), name: 'モエネクター',            price: 20000,  category: 'シャンパン' },
+    { id: genId(), name: 'モエアイス',              price: 25000,  category: 'シャンパン' },
+    { id: genId(), name: 'ソウメイ',                price: 65000,  category: 'シャンパン' },
+    { id: genId(), name: 'エンジェル',              price: 130000, category: 'シャンパン' },
+    { id: genId(), name: 'アルマンド',              price: 160000, category: 'シャンパン' },
+    // ボトル
+    { id: genId(), name: 'ウイスキー',              price: 25000,  category: 'ボトル' },
+    { id: genId(), name: 'ワイン',                  price: 15000,  category: 'ボトル' },
+    { id: genId(), name: '焼酎',                    price: 6500,   category: 'ボトル' },
+    // ショット
+    { id: genId(), name: '1800アネホ',              price: 700,    category: 'ショット' },
+    { id: genId(), name: 'コカレロ',                price: 700,    category: 'ショット' },
+    { id: genId(), name: 'コカボム',                price: 700,    category: 'ショット' },
+    { id: genId(), name: 'イエガー',                price: 700,    category: 'ショット' },
+    { id: genId(), name: 'ズブロッカ',              price: 700,    category: 'ショット' },
+    { id: genId(), name: 'テキーラローズ',          price: 700,    category: 'ショット' },
+    { id: genId(), name: 'クライナー',              price: 700,    category: 'ショット' },
+    { id: genId(), name: 'ケンスペ',                price: 900,    category: 'ショット' },
+    { id: genId(), name: 'アブサン',                price: 1000,   category: 'ショット' },
+    { id: genId(), name: 'アブボム',                price: 1200,   category: 'ショット' },
+    // システム
+    { id: genId(), name: '飲み放題・歌い放題 60分', price: 1980,   category: 'システム' },
+    { id: genId(), name: '延長 30分',               price: 980,    category: 'システム' },
+    { id: genId(), name: 'ポップコーン',            price: 500,    category: 'システム' },
+    { id: genId(), name: 'ダーツ 1ゲーム',         price: 100,    category: 'システム' },
+    // フード（価格未設定は要確認）
+    { id: genId(), name: 'フライドポテト 塩/BBQ',  price: 0,      category: 'フード' },
+    { id: genId(), name: 'マルゲリータ',            price: 0,      category: 'フード' },
+    { id: genId(), name: '照り焼きピザ',            price: 0,      category: 'フード' },
+    { id: genId(), name: 'ペペロンチーノ',          price: 0,      category: 'フード' },
+    { id: genId(), name: 'カルボナーラ',            price: 0,      category: 'フード' },
+    { id: genId(), name: 'アヒージョ',              price: 0,      category: 'フード' },
+    { id: genId(), name: 'ステーキ',                price: 0,      category: 'フード' },
+    { id: genId(), name: 'ソーセージ',              price: 0,      category: 'フード' },
+    { id: genId(), name: '醤油ラーメン',            price: 0,      category: 'フード' },
+    { id: genId(), name: 'しじみ汁',                price: 0,      category: 'フード' },
+    { id: genId(), name: 'チーズ',                  price: 0,      category: 'フード' },
+    { id: genId(), name: 'ビーフジャーキー',        price: 0,      category: 'フード' },
+    { id: genId(), name: 'チョコレート',            price: 0,      category: 'フード' },
+    { id: genId(), name: 'ナッツ',                  price: 0,      category: 'フード' },
+    { id: genId(), name: 'おしんこ',                price: 0,      category: 'フード' },
+    { id: genId(), name: '枝豆',                    price: 0,      category: 'フード' },
+    { id: genId(), name: 'Birthdayプレート',        price: 4000,   category: 'フード' },
+  ];
+}
 
 function initDefaultMenu() {
   if (loadMenu().length === 0) {
-    const defaults = [
-      { id: genId(), name: 'ウイスキーソーダ', price: 800, category: 'ドリンク' },
-      { id: genId(), name: 'バーボンロック', price: 900, category: 'ドリンク' },
-      { id: genId(), name: 'ジントニック', price: 750, category: 'ドリンク' },
-      { id: genId(), name: 'モスコミュール', price: 800, category: 'ドリンク' },
-      { id: genId(), name: 'アブサン', price: 1200, category: 'ドリンク' },
-      { id: genId(), name: 'カシスソーダ', price: 700, category: 'ドリンク' },
-      { id: genId(), name: 'ノンアルコールコーラ', price: 500, category: 'ドリンク' },
-      { id: genId(), name: 'ミックスナッツ', price: 400, category: 'フード' },
-      { id: genId(), name: 'チーズ盛り合わせ', price: 800, category: 'フード' },
-      { id: genId(), name: 'オリーブ', price: 350, category: 'フード' },
-    ];
-    saveMenu(defaults);
+    saveMenu(getDefaultMenuItems());
   }
+}
+
+function resetToDefaultMenu() {
+  if (!confirm('現在のメニューをすべて削除し、実際のメニューに置き換えますか？')) return;
+  saveMenu(getDefaultMenuItems());
+  renderMenuList();
+  showToast('メニューを読み込みました');
 }
 
 // ===== トースト通知 =====
@@ -376,11 +434,33 @@ function createNewOrder() {
 
 function renderMenuList() {
   const menu = loadMenu();
-  const drinks = menu.filter(m => m.category === 'ドリンク');
-  const foods = menu.filter(m => m.category === 'フード');
+  const container = document.getElementById('menu-categories-container');
+  container.innerHTML = '';
 
-  renderMenuCategory('menu-list-drink', drinks);
-  renderMenuCategory('menu-list-food', foods);
+  const knownKeys = MENU_CATEGORIES.map(c => c.key);
+
+  MENU_CATEGORIES.forEach(({ key, label, cssClass }) => {
+    const items = menu.filter(m => m.category === key);
+    if (items.length === 0) return;
+    const section = document.createElement('div');
+    section.className = 'menu-category-section';
+    section.innerHTML = `
+      <h3 class="category-label ${cssClass}">${label}</h3>
+      <div id="menu-list-${key}" class="menu-list"></div>
+    `;
+    container.appendChild(section);
+    renderMenuCategory(`menu-list-${key}`, items);
+  });
+
+  // 未知カテゴリも表示
+  const others = menu.filter(m => !knownKeys.includes(m.category));
+  if (others.length > 0) {
+    const section = document.createElement('div');
+    section.className = 'menu-category-section';
+    section.innerHTML = `<h3 class="category-label">その他</h3><div id="menu-list-other" class="menu-list"></div>`;
+    container.appendChild(section);
+    renderMenuCategory('menu-list-other', others);
+  }
 }
 
 function renderMenuCategory(containerId, items) {
@@ -478,6 +558,7 @@ function deleteMenuItem(id) {
 
 function initMenuTab() {
   document.getElementById('btn-add-menu').addEventListener('click', openMenuAddForm);
+  document.getElementById('btn-reset-menu').addEventListener('click', resetToDefaultMenu);
   document.getElementById('btn-save-menu').addEventListener('click', saveMenuForm);
   document.getElementById('btn-cancel-menu').addEventListener('click', cancelMenuForm);
 }
