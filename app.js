@@ -487,6 +487,8 @@ function initMenuTab() {
 // ===================================================
 
 let checkoutTargetOrderId = null;
+let checkoutGuestType = 'returning'; // 'new' | 'returning'
+let checkoutPaymentMethod = 'cash';  // 'cash' | 'card'
 
 function renderCheckoutList() {
   const orders = loadOrders().filter(o => o.status === 'open');
@@ -541,6 +543,18 @@ function openCheckoutModal(orderId) {
   document.getElementById('checkout-modal-total').textContent = formatPrice(order.total);
   document.getElementById('checkout-received').value = '';
   document.getElementById('checkout-change-row').classList.add('hidden');
+
+  // 人数・客種別・支払方法リセット
+  document.getElementById('checkout-guest-count').value = '1';
+  checkoutGuestType = 'returning';
+  checkoutPaymentMethod = 'cash';
+  document.querySelectorAll('#guest-type-group .toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === 'returning');
+  });
+  document.querySelectorAll('#payment-method-group .toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.method === 'cash');
+  });
+
   document.getElementById('checkout-modal').classList.remove('hidden');
 }
 
@@ -560,8 +574,12 @@ function confirmCheckout() {
     return;
   }
 
+  const guestCount = parseInt(document.getElementById('checkout-guest-count').value, 10) || 1;
   order.status = 'closed';
   order.closedAt = new Date().toISOString();
+  order.guestCount = guestCount;
+  order.isNew = checkoutGuestType === 'new';
+  order.paymentMethod = checkoutPaymentMethod;
   saveOrders(orders);
 
   closeCheckoutModal();
@@ -588,6 +606,26 @@ function initCheckoutTab() {
     } else {
       changeRow.classList.add('hidden');
     }
+  });
+
+  // 客種別トグル
+  document.querySelectorAll('#guest-type-group .toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      checkoutGuestType = btn.dataset.type;
+      document.querySelectorAll('#guest-type-group .toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.type === checkoutGuestType);
+      });
+    });
+  });
+
+  // 支払方法トグル
+  document.querySelectorAll('#payment-method-group .toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      checkoutPaymentMethod = btn.dataset.method;
+      document.querySelectorAll('#payment-method-group .toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.method === checkoutPaymentMethod);
+      });
+    });
   });
 
   // モーダル外クリックで閉じる
@@ -618,25 +656,42 @@ function renderDailyReport() {
 
   const totalSales = orders.reduce((s, o) => s + o.total, 0);
   const totalOrders = orders.length;
-  const totalItems = orders.reduce((s, o) => s + o.items.reduce((ss, i) => ss + i.quantity, 0), 0);
+  const totalPeople = orders.reduce((s, o) => s + (o.guestCount || 0), 0);
+  const newOrders = orders.filter(o => o.isNew).length;
+  const returningOrders = orders.filter(o => !o.isNew).length;
+  const newPeople = orders.filter(o => o.isNew).reduce((s, o) => s + (o.guestCount || 0), 0);
+  const returningPeople = orders.filter(o => !o.isNew).reduce((s, o) => s + (o.guestCount || 0), 0);
+  const cashSales = orders.filter(o => o.paymentMethod === 'cash' || o.paymentMethod == null).reduce((s, o) => s + o.total, 0);
+  const cardSales = orders.filter(o => o.paymentMethod === 'card').reduce((s, o) => s + o.total, 0);
+  const avgPerGroup = totalOrders > 0 ? Math.round(totalSales / totalOrders) : 0;
+  const avgPerPerson = totalPeople > 0 ? Math.round(totalSales / totalPeople) : 0;
 
   const summaryEl = document.getElementById('daily-summary');
   summaryEl.innerHTML = `
-    <div class="summary-card">
-      <div class="label">売上合計</div>
-      <div class="value">${formatPrice(totalSales)}</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">会計件数</div>
-      <div class="value small">${totalOrders} 件</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">提供数</div>
-      <div class="value small">${totalItems} 品</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">客単価</div>
-      <div class="value small">${totalOrders > 0 ? formatPrice(Math.round(totalSales / totalOrders)) : '¥0'}</div>
+    <div class="report-sections">
+      <div class="report-section">
+        <div class="report-section-title">■ 売上高</div>
+        <div class="report-data-row"><span class="label">総売上</span><span class="value">${formatPrice(totalSales)}</span></div>
+        <div class="report-data-row"><span class="label">客単価（組）</span><span class="value">${formatPrice(avgPerGroup)}</span></div>
+        <div class="report-data-row"><span class="label">客単価（人数）</span><span class="value">${formatPrice(avgPerPerson)}</span></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">■ 内訳</div>
+        <div class="report-data-row"><span class="label">現金</span><span class="value">${formatPrice(cashSales)}</span></div>
+        <div class="report-data-row"><span class="label">CL</span><span class="value">${formatPrice(cardSales)}</span></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">■ 組数</div>
+        <div class="report-data-row"><span class="label">（累計）</span><span class="value">${totalOrders} 組</span></div>
+        <div class="report-data-row"><span class="label">（新規）</span><span class="value">${newOrders} 組</span></div>
+        <div class="report-data-row"><span class="label">（再来）</span><span class="value">${returningOrders} 組</span></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">■ 人数</div>
+        <div class="report-data-row"><span class="label">（累計）</span><span class="value">${totalPeople} 人</span></div>
+        <div class="report-data-row"><span class="label">（新規）</span><span class="value">${newPeople} 人</span></div>
+        <div class="report-data-row"><span class="label">（再来）</span><span class="value">${returningPeople} 人</span></div>
+      </div>
     </div>
   `;
 
@@ -651,12 +706,14 @@ function renderDailyReport() {
   orders.sort((a, b) => new Date(a.closedAt) - new Date(b.closedAt));
   orders.forEach(order => {
     const count = order.items.reduce((s, i) => s + i.quantity, 0);
+    const guestLabel = order.isNew ? '新規' : '再来';
+    const payLabel = order.paymentMethod === 'card' ? 'CL' : '現金';
     const row = document.createElement('div');
     row.className = 'report-order-row';
     row.innerHTML = `
       <span class="time">${formatTime(order.closedAt)}</span>
       <span class="table">TB: ${escHtml(order.tableNumber)}</span>
-      <span class="items-count">${count} 品</span>
+      <span class="items-count">${order.guestCount || '-'} 人 / ${guestLabel} / ${payLabel}</span>
       <span class="amount">${formatPrice(order.total)}</span>
     `;
     listEl.appendChild(row);
@@ -669,24 +726,43 @@ function renderMonthlyReport() {
 
   const totalSales = orders.reduce((s, o) => s + o.total, 0);
   const totalOrders = orders.length;
+  const totalPeople = orders.reduce((s, o) => s + (o.guestCount || 0), 0);
+  const newOrders = orders.filter(o => o.isNew).length;
+  const returningOrders = orders.filter(o => !o.isNew).length;
+  const newPeople = orders.filter(o => o.isNew).reduce((s, o) => s + (o.guestCount || 0), 0);
+  const returningPeople = orders.filter(o => !o.isNew).reduce((s, o) => s + (o.guestCount || 0), 0);
+  const cashSales = orders.filter(o => o.paymentMethod === 'cash' || o.paymentMethod == null).reduce((s, o) => s + o.total, 0);
+  const cardSales = orders.filter(o => o.paymentMethod === 'card').reduce((s, o) => s + o.total, 0);
+  const avgPerGroup = totalOrders > 0 ? Math.round(totalSales / totalOrders) : 0;
+  const avgPerPerson = totalPeople > 0 ? Math.round(totalSales / totalPeople) : 0;
 
   const summaryEl = document.getElementById('monthly-summary');
   summaryEl.innerHTML = `
-    <div class="summary-card">
-      <div class="label">月間売上</div>
-      <div class="value">${formatPrice(totalSales)}</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">会計件数</div>
-      <div class="value small">${totalOrders} 件</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">営業日数</div>
-      <div class="value small">${countUniqueDays(orders)} 日</div>
-    </div>
-    <div class="summary-card">
-      <div class="label">客単価</div>
-      <div class="value small">${totalOrders > 0 ? formatPrice(Math.round(totalSales / totalOrders)) : '¥0'}</div>
+    <div class="report-sections">
+      <div class="report-section">
+        <div class="report-section-title">■ 売上高（月次）</div>
+        <div class="report-data-row"><span class="label">総売上</span><span class="value">${formatPrice(totalSales)}</span></div>
+        <div class="report-data-row"><span class="label">客単価（組）</span><span class="value">${formatPrice(avgPerGroup)}</span></div>
+        <div class="report-data-row"><span class="label">客単価（人数）</span><span class="value">${formatPrice(avgPerPerson)}</span></div>
+        <div class="report-data-row"><span class="label">営業日数</span><span class="value">${countUniqueDays(orders)} 日</span></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">■ 内訳（月次）</div>
+        <div class="report-data-row"><span class="label">現金</span><span class="value">${formatPrice(cashSales)}</span></div>
+        <div class="report-data-row"><span class="label">CL</span><span class="value">${formatPrice(cardSales)}</span></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">■ 組数（月次）</div>
+        <div class="report-data-row"><span class="label">（累計）</span><span class="value">${totalOrders} 組</span></div>
+        <div class="report-data-row"><span class="label">（新規）</span><span class="value">${newOrders} 組</span></div>
+        <div class="report-data-row"><span class="label">（再来）</span><span class="value">${returningOrders} 組</span></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">■ 人数（月次）</div>
+        <div class="report-data-row"><span class="label">（累計）</span><span class="value">${totalPeople} 人</span></div>
+        <div class="report-data-row"><span class="label">（新規）</span><span class="value">${newPeople} 人</span></div>
+        <div class="report-data-row"><span class="label">（再来）</span><span class="value">${returningPeople} 人</span></div>
+      </div>
     </div>
   `;
 

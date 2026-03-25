@@ -148,6 +148,24 @@
             <span>お釣り</span>
             <span id="checkout-change" class="change-amount"></span>
           </div>
+          <div class="form-row">
+            <label>人数</label>
+            <input type="number" id="checkout-guest-count" value="1" min="1" max="99">
+          </div>
+          <div class="form-row">
+            <label>客種別</label>
+            <div class="toggle-group" id="guest-type-group">
+              <button class="toggle-btn active" data-type="returning">再来</button>
+              <button class="toggle-btn" data-type="new">新規</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>支払方法</label>
+            <div class="toggle-group" id="payment-method-group">
+              <button class="toggle-btn active" data-method="cash">現金</button>
+              <button class="toggle-btn" data-method="card">CL</button>
+            </div>
+          </div>
           <div class="modal-actions">
             <button class="btn btn-primary" id="btn-confirm-checkout">会計完了</button>
             <button class="btn btn-secondary" id="btn-cancel-checkout">キャンセル</button>
