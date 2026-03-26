@@ -927,7 +927,8 @@ html, body {
   padding-bottom: 0;
 }
 
-.report-tab-btn {
+.report-tab-btn,
+.admin-tab-btn {
   background: none;
   border: none;
   color: var(--text-muted);
@@ -940,11 +941,13 @@ html, body {
   margin-bottom: -1px;
 }
 
-.report-tab-btn:hover {
+.report-tab-btn:hover,
+.admin-tab-btn:hover {
   color: var(--text);
 }
 
-.report-tab-btn.active {
+.report-tab-btn.active,
+.admin-tab-btn.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
