@@ -709,34 +709,92 @@ html, body {
   border-color: var(--border);
 }
 
+/* ===== メニュー管理 改善 ===== */
+.menu-admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.category-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.category-count-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.category-warn-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(224, 85, 85, 0.12);
+  border: 1px solid rgba(224, 85, 85, 0.4);
+  color: var(--danger);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
 .menu-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .menu-item-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: border-color 0.2s;
+}
+
+/* カテゴリ別の左ボーダー色 */
+.menu-item-card[data-category="シャンパン"] { border-left-color: #d4af37; }
+.menu-item-card[data-category="ボトル"]    { border-left-color: #9b7fd4; }
+.menu-item-card[data-category="ショット"]  { border-left-color: #4db8c8; }
+.menu-item-card[data-category="ドリンク"]  { border-left-color: var(--drink); }
+.menu-item-card[data-category="フード"]    { border-left-color: var(--food); }
+.menu-item-card[data-category="システム"]  { border-left-color: var(--text-muted); }
+
+.menu-item-card:hover {
+  border-color: var(--text-muted);
+  border-left-color: inherit;
 }
 
 .menu-item-card .item-info {
   flex: 1;
+  min-width: 0;
 }
 
 .menu-item-card .item-info .name {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--text);
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-item-card .item-info .price {
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   color: var(--accent);
   font-weight: 600;
   margin-top: 2px;
@@ -1037,6 +1095,12 @@ html, body {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.history-order-header:hover {
+  opacity: 0.85;
 }
 
 .history-table {
@@ -1112,6 +1176,109 @@ html, body {
   color: var(--accent);
   min-width: 70px;
   text-align: right;
+}
+
+.history-item-qty {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  min-width: 28px;
+}
+
+/* ===== 過去の伝票 サマリー ===== */
+.history-summary {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.history-summary-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.history-summary-row + .history-summary-row {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.hs-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hs-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.hs-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.hs-value.accent {
+  color: var(--accent);
+  font-size: 1.15rem;
+}
+
+/* 支払方法による左ボーダー */
+.history-order-card.pay-cash {
+  border-left: 4px solid var(--success);
+}
+
+.history-order-card.pay-card {
+  border-left: 4px solid var(--drink);
+}
+
+/* ヘッダー左右レイアウト */
+.history-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-time-range {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.history-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.history-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.badge-cl {
+  border-color: var(--drink);
+  color: var(--drink);
+}
+
+.badge-pay {
+  border-color: var(--text-muted);
+}
+
+/* 価格未設定 */
+.price-unset {
+  color: var(--danger) !important;
+  font-style: italic;
 }
 
 /* ===== トグルボタン ===== */

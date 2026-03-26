@@ -507,14 +507,22 @@ function renderMenuList() {
   MENU_CATEGORIES.forEach(({ key, label, cssClass }) => {
     const items = menu.filter(m => m.category === key);
     if (items.length === 0) return;
+    const zeroCount = items.filter(i => i.price === 0).length;
+    const warnHtml = zeroCount > 0
+      ? `<span class="category-warn-badge">価格未設定 ${zeroCount}品</span>`
+      : '';
     const section = document.createElement('div');
     section.className = 'menu-category-section';
     section.innerHTML = `
-      <h3 class="category-label ${cssClass}">${label}</h3>
+      <div class="category-header-row">
+        <h3 class="category-label ${cssClass}">${label}</h3>
+        <span class="category-count-badge">${items.length}品</span>
+        ${warnHtml}
+      </div>
       <div id="menu-list-${key}" class="menu-list"></div>
     `;
     container.appendChild(section);
-    renderMenuCategory(`menu-list-${key}`, items);
+    renderMenuCategory(`menu-list-${key}`, items, key);
   });
 
   // 未知カテゴリも表示
@@ -522,13 +530,19 @@ function renderMenuList() {
   if (others.length > 0) {
     const section = document.createElement('div');
     section.className = 'menu-category-section';
-    section.innerHTML = `<h3 class="category-label">その他</h3><div id="menu-list-other" class="menu-list"></div>`;
+    section.innerHTML = `
+      <div class="category-header-row">
+        <h3 class="category-label">その他</h3>
+        <span class="category-count-badge">${others.length}品</span>
+      </div>
+      <div id="menu-list-other" class="menu-list"></div>
+    `;
     container.appendChild(section);
-    renderMenuCategory('menu-list-other', others);
+    renderMenuCategory('menu-list-other', others, '');
   }
 }
 
-function renderMenuCategory(containerId, items) {
+function renderMenuCategory(containerId, items, categoryKey) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
 
@@ -538,15 +552,17 @@ function renderMenuCategory(containerId, items) {
   }
 
   items.forEach(item => {
+    const isUnset = item.price === 0;
     const card = document.createElement('div');
     card.className = 'menu-item-card';
+    card.dataset.category = categoryKey;
     card.innerHTML = `
       <div class="item-info">
         <div class="name">${escHtml(item.name)}</div>
-        <div class="price">${formatPrice(item.price)}</div>
+        <div class="price ${isUnset ? 'price-unset' : ''}">${isUnset ? '価格未設定' : formatPrice(item.price)}</div>
       </div>
       <div class="item-actions">
-        <button class="btn-icon edit" data-id="${item.id}">編集</button>
+        <button class="btn-icon edit" data-id="${item.id}">✏ 編集</button>
         <button class="btn-icon delete" data-id="${item.id}">削除</button>
       </div>
     `;
@@ -1007,33 +1023,83 @@ function renderPastOrders() {
     return;
   }
 
+  // サマリー
+  const totalSales = orders.reduce((s, o) => s + o.total, 0);
+  const totalPeople = orders.reduce((s, o) => s + (o.guestCount || 0), 0);
+  const cashSales = orders.filter(o => o.paymentMethod !== 'card').reduce((s, o) => s + o.total, 0);
+  const cardSales = orders.filter(o => o.paymentMethod === 'card').reduce((s, o) => s + o.total, 0);
+
+  const summary = document.createElement('div');
+  summary.className = 'history-summary';
+  summary.innerHTML = `
+    <div class="history-summary-row">
+      <div class="hs-item">
+        <div class="hs-label">総売上</div>
+        <div class="hs-value accent">${formatPrice(totalSales)}</div>
+      </div>
+      <div class="hs-item">
+        <div class="hs-label">組数</div>
+        <div class="hs-value">${orders.length} 組</div>
+      </div>
+      <div class="hs-item">
+        <div class="hs-label">人数</div>
+        <div class="hs-value">${totalPeople} 人</div>
+      </div>
+    </div>
+    <div class="history-summary-row">
+      <div class="hs-item">
+        <div class="hs-label">現金</div>
+        <div class="hs-value">${formatPrice(cashSales)}</div>
+      </div>
+      <div class="hs-item">
+        <div class="hs-label">CL</div>
+        <div class="hs-value">${formatPrice(cardSales)}</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(summary);
+
+  // 伝票一覧
   orders.forEach(order => {
     const guestLabel = order.isNew ? '新規' : '再来';
     const payLabel = order.paymentMethod === 'card' ? 'CL' : '現金';
     const itemsHtml = order.items.length === 0
-      ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:6px 0;">注文なし</div>'
+      ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px 0;">注文なし</div>'
       : order.items.map(item => `
           <div class="history-item-row">
             <span class="history-item-time">${item.addedAt ? formatTime(item.addedAt) : '--:--'}</span>
-            <span class="history-item-name">${escHtml(item.name)} × ${item.quantity}</span>
+            <span class="history-item-name">${escHtml(item.name)}</span>
+            <span class="history-item-qty">× ${item.quantity}</span>
             <span class="history-item-price">${formatPrice(item.price * item.quantity)}</span>
           </div>`).join('');
 
     const card = document.createElement('div');
-    card.className = 'history-order-card';
+    card.className = `history-order-card ${order.paymentMethod === 'card' ? 'pay-card' : 'pay-cash'}`;
     card.innerHTML = `
       <div class="history-order-header">
-        <span class="history-table">テーブル ${escHtml(order.tableNumber)}</span>
-        <span class="history-time">${formatTime(order.createdAt)} 〜 ${formatTime(order.closedAt)}</span>
-        <span class="history-badges">
-          <span class="history-badge">${order.guestCount || '-'}人</span>
+        <div class="history-header-left">
+          <span class="history-table">テーブル ${escHtml(order.tableNumber)}</span>
+          <span class="history-time-range">${formatTime(order.createdAt)} 〜 ${formatTime(order.closedAt)}</span>
+        </div>
+        <div class="history-header-right">
           <span class="history-badge ${order.isNew ? 'badge-new' : 'badge-returning'}">${guestLabel}</span>
-          <span class="history-badge">${payLabel}</span>
-        </span>
-        <span class="history-total">${formatPrice(order.total)}</span>
+          <span class="history-badge badge-pay ${order.paymentMethod === 'card' ? 'badge-cl' : ''}">${payLabel}</span>
+          <span class="history-badge">${order.guestCount || '-'}人</span>
+          <span class="history-total">${formatPrice(order.total)}</span>
+          <span class="history-toggle">∨</span>
+        </div>
       </div>
-      <div class="history-items">${itemsHtml}</div>
+      <div class="history-items hidden">${itemsHtml}</div>
     `;
+
+    // 明細の開閉
+    card.querySelector('.history-order-header').addEventListener('click', () => {
+      const items = card.querySelector('.history-items');
+      const toggle = card.querySelector('.history-toggle');
+      const isHidden = items.classList.toggle('hidden');
+      toggle.textContent = isHidden ? '∨' : '∧';
+    });
+
     container.appendChild(card);
   });
 }
