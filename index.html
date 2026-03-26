@@ -13,9 +13,9 @@
     <h1 class="header-title">🍸 Bar Absinthe</h1>
     <nav class="nav">
       <button class="nav-btn active" data-tab="orders">伝票管理</button>
-      <button class="nav-btn" data-tab="menu">メニュー</button>
       <button class="nav-btn" data-tab="checkout">お会計</button>
       <button class="nav-btn" data-tab="reports">集計</button>
+      <button class="nav-btn" data-tab="admin">管理</button>
     </nav>
   </header>
 
@@ -83,47 +83,63 @@
       <div id="orders-list" class="orders-grid"></div>
     </section>
 
-    <!-- ========== メニュータブ ========== -->
-    <section id="tab-menu" class="tab-content hidden">
+    <!-- ========== 管理タブ ========== -->
+    <section id="tab-admin" class="tab-content hidden">
       <div class="section-header">
-        <h2>メニュー管理</h2>
-        <div style="display:flex;gap:8px;">
+        <h2>管理</h2>
+      </div>
+
+      <div class="report-tabs">
+        <button class="admin-tab-btn active" data-admin="menu">メニュー管理</button>
+        <button class="admin-tab-btn" data-admin="history">過去の伝票</button>
+      </div>
+
+      <!-- ===== メニュー管理 ===== -->
+      <div id="admin-menu" class="admin-content">
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
           <button class="btn btn-primary" id="btn-add-menu">＋ 商品追加</button>
           <button class="btn btn-secondary" id="btn-reset-menu">メニュー初期化</button>
         </div>
+
+        <div id="menu-form" class="card hidden">
+          <h3 id="menu-form-title">商品追加</h3>
+          <div class="form-row">
+            <label>カテゴリ</label>
+            <select id="menu-category">
+              <option value="シャンパン">シャンパン</option>
+              <option value="ボトル">ボトル</option>
+              <option value="ショット">ショット</option>
+              <option value="ドリンク">ドリンク</option>
+              <option value="フード">フード</option>
+              <option value="システム">システム</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>商品名</label>
+            <input type="text" id="menu-name" placeholder="例: ウイスキーソーダ" maxlength="30">
+          </div>
+          <div class="form-row">
+            <label>価格（円）</label>
+            <input type="number" id="menu-price" placeholder="例: 800" min="0" max="9999999">
+          </div>
+          <input type="hidden" id="menu-edit-id">
+          <div class="form-actions">
+            <button class="btn btn-primary" id="btn-save-menu">保存</button>
+            <button class="btn btn-secondary" id="btn-cancel-menu">キャンセル</button>
+          </div>
+        </div>
+
+        <div id="menu-categories-container"></div>
       </div>
 
-      <!-- 商品追加フォーム -->
-      <div id="menu-form" class="card hidden">
-        <h3 id="menu-form-title">商品追加</h3>
-        <div class="form-row">
-          <label>カテゴリ</label>
-          <select id="menu-category">
-            <option value="シャンパン">シャンパン</option>
-            <option value="ボトル">ボトル</option>
-            <option value="ショット">ショット</option>
-            <option value="ドリンク">ドリンク</option>
-            <option value="フード">フード</option>
-            <option value="システム">システム</option>
-          </select>
+      <!-- ===== 過去の伝票 ===== -->
+      <div id="admin-history" class="admin-content hidden">
+        <div class="report-filter">
+          <label>日付</label>
+          <input type="date" id="history-date">
         </div>
-        <div class="form-row">
-          <label>商品名</label>
-          <input type="text" id="menu-name" placeholder="例: ウイスキーソーダ" maxlength="30">
-        </div>
-        <div class="form-row">
-          <label>価格（円）</label>
-          <input type="number" id="menu-price" placeholder="例: 800" min="0" max="9999999">
-        </div>
-        <input type="hidden" id="menu-edit-id">
-        <div class="form-actions">
-          <button class="btn btn-primary" id="btn-save-menu">保存</button>
-          <button class="btn btn-secondary" id="btn-cancel-menu">キャンセル</button>
-        </div>
+        <div id="history-orders-list"></div>
       </div>
-
-      <!-- メニュー一覧（動的レンダリング） -->
-      <div id="menu-categories-container"></div>
     </section>
 
     <!-- ========== お会計タブ ========== -->

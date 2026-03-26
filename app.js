@@ -178,7 +178,7 @@ function initTabs() {
       el.classList.add('active');
 
       if (tab === 'orders') renderOrdersList();
-      if (tab === 'menu') renderMenuList();
+      if (tab === 'admin') renderAdminTab();
       if (tab === 'checkout') renderCheckoutList();
       if (tab === 'reports') initReports();
     });
@@ -963,6 +963,81 @@ function initReportsTab() {
   document.getElementById('report-month').addEventListener('change', renderMonthlyReport);
 }
 
+// ===================================================
+//   管理タブ
+// ===================================================
+
+let adminSubTab = 'menu';
+
+function renderAdminTab() {
+  if (adminSubTab === 'menu') renderMenuList();
+  if (adminSubTab === 'history') renderPastOrders();
+}
+
+function initAdminTab() {
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      adminSubTab = btn.dataset.admin;
+      document.getElementById('admin-menu').classList.toggle('hidden', adminSubTab !== 'menu');
+      document.getElementById('admin-history').classList.toggle('hidden', adminSubTab !== 'history');
+      renderAdminTab();
+    });
+  });
+
+  document.getElementById('history-date').addEventListener('change', renderPastOrders);
+}
+
+function renderPastOrders() {
+  const dateInput = document.getElementById('history-date');
+  if (!dateInput.value) dateInput.value = todayStr();
+  const dateStr = dateInput.value;
+  const container = document.getElementById('history-orders-list');
+  container.innerHTML = '';
+
+  if (!dateStr) return;
+
+  const orders = loadOrders()
+    .filter(o => o.status === 'closed' && isoToDateStr(o.closedAt) === dateStr)
+    .sort((a, b) => new Date(a.closedAt) - new Date(b.closedAt));
+
+  if (orders.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="padding:40px 0;"><span class="empty-icon">📋</span>この日の伝票はありません</div>';
+    return;
+  }
+
+  orders.forEach(order => {
+    const guestLabel = order.isNew ? '新規' : '再来';
+    const payLabel = order.paymentMethod === 'card' ? 'CL' : '現金';
+    const itemsHtml = order.items.length === 0
+      ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:6px 0;">注文なし</div>'
+      : order.items.map(item => `
+          <div class="history-item-row">
+            <span class="history-item-time">${item.addedAt ? formatTime(item.addedAt) : '--:--'}</span>
+            <span class="history-item-name">${escHtml(item.name)} × ${item.quantity}</span>
+            <span class="history-item-price">${formatPrice(item.price * item.quantity)}</span>
+          </div>`).join('');
+
+    const card = document.createElement('div');
+    card.className = 'history-order-card';
+    card.innerHTML = `
+      <div class="history-order-header">
+        <span class="history-table">テーブル ${escHtml(order.tableNumber)}</span>
+        <span class="history-time">${formatTime(order.createdAt)} 〜 ${formatTime(order.closedAt)}</span>
+        <span class="history-badges">
+          <span class="history-badge">${order.guestCount || '-'}人</span>
+          <span class="history-badge ${order.isNew ? 'badge-new' : 'badge-returning'}">${guestLabel}</span>
+          <span class="history-badge">${payLabel}</span>
+        </span>
+        <span class="history-total">${formatPrice(order.total)}</span>
+      </div>
+      <div class="history-items">${itemsHtml}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
 // ===== XSS対策 =====
 
 function escHtml(str) {
@@ -983,6 +1058,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initOrdersTab();
   initMenuTab();
+  initAdminTab();
   initCheckoutTab();
   initReportsTab();
 
